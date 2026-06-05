@@ -27,15 +27,23 @@ public class GameEngine {
             throw new IllegalStateException("Quiz not generated yet.");
         }
 
-        ArrayList<String> remainingCorrect = new ArrayList<String>(Arrays.asList(currentQuiz.getCorrectAnswerList()));
+        ArrayList<String> remainingCorrect = new ArrayList<String>(Arrays.asList(currentQuiz.getCorrectAnswerArray()));
         ArrayList<String> matched = new ArrayList<String>();
         ArrayList<String> incorrectProvided = new ArrayList<String>();
 
         for (String answer : answerList) {
-            if (remainingCorrect.contains(answer)) {
-                matched.add(answer);
-                remainingCorrect.remove(answer);
-            } else {
+            String matchedCorrectAnswer = null;
+            for (String correctAnswer : remainingCorrect) {
+                if (correctAnswer.toLowerCase().equals(answer.toLowerCase())) {
+                    matchedCorrectAnswer = correctAnswer;
+                    break;
+                }
+            }
+            if (matchedCorrectAnswer != null) {
+                matched.add(matchedCorrectAnswer);
+                remainingCorrect.remove(matchedCorrectAnswer);
+            }
+            else {
                 incorrectProvided.add(answer);
             }
         }
