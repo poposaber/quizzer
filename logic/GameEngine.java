@@ -2,8 +2,8 @@ package logic;
 
 import model.GradeResult;
 import model.Quiz;
+import model.ScoringMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GameEngine {
     private QuizDatabase qdb = new QuizDatabase();
@@ -27,34 +27,60 @@ public class GameEngine {
             throw new IllegalStateException("Quiz not generated yet.");
         }
 
-        ArrayList<String> remainingCorrect = new ArrayList<String>(Arrays.asList(currentQuiz.getCorrectAnswerArray()));
+        String[] correctAnswers = currentQuiz.getCorrectAnswerArray();
+        Integer[] scoreArray = currentQuiz.getScoreArray();
+        boolean[] matchedSlots = new boolean[correctAnswers.length];
+
         ArrayList<String> matched = new ArrayList<String>();
         ArrayList<String> incorrectProvided = new ArrayList<String>();
+        int pointsAwarded = 0;
 
         for (String answer : answerList) {
+            if (answer == null) {
+                incorrectProvided.add(null);
+                continue;
+            }
+
             String matchedCorrectAnswer = null;
-            for (String correctAnswer : remainingCorrect) {
-                if (correctAnswer.toLowerCase().equals(answer.toLowerCase())) {
+            for (int i = 0; i < correctAnswers.length; i++) {
+                if (matchedSlots[i]) {
+                    continue;
+                }
+
+                String correctAnswer = correctAnswers[i];
+                if (correctAnswer != null && correctAnswer.equalsIgnoreCase(answer)) {
                     matchedCorrectAnswer = correctAnswer;
+                    matchedSlots[i] = true;
+                    if (currentQuiz.getScoringMode() == ScoringMode.WEIGHTED_PER_ANSWER && scoreArray != null) {
+                        pointsAwarded += scoreArray[i];
+                    }
                     break;
                 }
             }
+
             if (matchedCorrectAnswer != null) {
                 matched.add(matchedCorrectAnswer);
-                remainingCorrect.remove(matchedCorrectAnswer);
             }
             else {
                 incorrectProvided.add(answer);
             }
         }
 
+        ArrayList<String> remainingCorrect = new ArrayList<String>();
+        for (int i = 0; i < correctAnswers.length; i++) {
+            if (!matchedSlots[i]) {
+                remainingCorrect.add(correctAnswers[i]);
+            }
+        }
+
         boolean allMatched = incorrectProvided.isEmpty() && remainingCorrect.isEmpty() && matched.size() == currentQuiz.getAnswerCount();
 
         int pointsPossible = currentQuiz.getScore();
-        int pointsAwarded = allMatched ? pointsPossible : 0; // simple full/zero scoring for now
-        if (allMatched) {
-            currentScore += pointsAwarded;
+        if (currentQuiz.getScoringMode() == ScoringMode.ALL_OR_NOTHING) {
+            pointsAwarded = allMatched ? pointsPossible : 0;
         }
+
+        currentScore += pointsAwarded;
 
         return new GradeResult(allMatched, pointsAwarded, pointsPossible, matched, remainingCorrect);
     }

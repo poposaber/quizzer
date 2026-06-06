@@ -6,7 +6,7 @@ public class Quiz {
     private int answerCount;
     private int totalScore;
     private ScoringMode scoringMode;
-    private int[] scoreArray;
+    private Integer[] scoreArray;
     public Quiz(String question, String correctAnswer, int score) {
         this.question = question;
         this.correctAnswerArray = new String[]{correctAnswer};
@@ -21,7 +21,7 @@ public class Quiz {
         this.totalScore = score;
         scoringMode = ScoringMode.ALL_OR_NOTHING;
     }
-    public Quiz(String question, String[] correctAnswerArray, int answerCount, int[] scoreArray) {
+    public Quiz(String question, String[] correctAnswerArray, int answerCount, Integer[] scoreArray) {
         if (correctAnswerArray.length != scoreArray.length) {
             throw new IllegalArgumentException("length of correctAnswerArray not equal to scoreArray.");
         }
@@ -47,5 +47,11 @@ public class Quiz {
     }
     public int getScore() {
         return totalScore;
+    }
+    public ScoringMode getScoringMode() {
+        return scoringMode;
+    }
+    public Integer[] getScoreArray() {
+        return scoreArray;
     }
 }
